@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 730335584898.dkr.ecr.eu-west-2.amazonaws.com/copiercat
+  build:
+    commands:
+      - echo Extracting version from package.json...
+      - VERSION=$(node -pe "require('./package.json').version")
+      - echo Building the Docker image...
+      - docker build -t nginxpwa:$VERSION .
+      - docker tag nginxpwa:$VERSION 730335584898.dkr.ecr.eu-west-2.amazonaws.com/copiercat:nginxpwa-$VERSION
+
+  post_build:
+    commands:
+      - echo Pushing the Docker image...
+      - docker push 730335584898.dkr.ecr.eu-west-2.amazonaws.com/copiercat:nginxpwa-$VERSION
+
